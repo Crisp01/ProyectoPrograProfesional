@@ -42,7 +42,7 @@ export const RegisterForm = () => {
         bankIds,
       });
       enqueueSnackbar(message, { variant: 'success' });
-      router.push(ROUTES.LOGIN);
+      router.push('/welcome');
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Something went wrong';

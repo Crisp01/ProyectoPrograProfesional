@@ -1,7 +1,8 @@
 'use client';
 
 import { ROUTES } from '@/constants/routes';
-import { registerApi } from '@/features/auth/api';
+import { API_URLS } from '@/lib/fetch/constants';
+import { postRequest } from '@/lib/fetch/utils';
 import {
   RegisterAuth,
   registerAuthSchema,
@@ -15,35 +16,32 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { enqueueSnackbar } from 'notistack';
 import { useForm } from 'react-hook-form';
 
 export const RegisterForm = () => {
-  // "next-router"
   const router = useRouter();
 
-  // "react-hook-form"
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterAuth>({ resolver: zodResolver(registerAuthSchema) });
 
-  // Utils
   const onSubmit = async ({ email, password, bci, chile }: RegisterAuth) => {
     const bankIds = [];
     if (bci) bankIds.push('bci');
     if (chile) bankIds.push('chile');
 
     try {
-      const { message } = await registerApi({
+      const { message } = await postRequest(API_URLS.USERS, {
         email,
         password,
         bankIds,
       });
       enqueueSnackbar(message, { variant: 'success' });
-
       router.push(ROUTES.LOGIN);
     } catch (err) {
       const message =
@@ -53,8 +51,26 @@ export const RegisterForm = () => {
   };
 
   return (
-    <Stack sx={{ width: '400px', px: 6, py: 8 }} component={Paper} spacing={2}>
-      <Typography variant="h5" textAlign="center">
+    <Stack
+      component={Paper}
+      spacing={2}
+      sx={{
+        width: {
+          xs: '90%',
+          sm: '400px',
+        },
+        maxWidth: '100%',
+        px: { xs: 3, sm: 6 },
+        py: { xs: 4, sm: 6, md: 8 },
+        mx: 'auto',
+        mt: { xs: 6, sm: 8 },
+      }}
+    >
+      <Typography
+        variant="h5"
+        textAlign="center"
+        sx={{ fontSize: { xs: '1.5rem', sm: '1.8rem' } }}
+      >
         Regístrate
       </Typography>
 
@@ -66,6 +82,7 @@ export const RegisterForm = () => {
             error={!!errors.email}
             helperText={errors.email?.message}
             {...register('email')}
+            fullWidth
           />
           <TextField
             label="Contraseña"
@@ -73,8 +90,10 @@ export const RegisterForm = () => {
             error={!!errors.password}
             helperText={errors.password?.message}
             {...register('password')}
+            fullWidth
           />
-          <FormGroup row>
+
+          <FormGroup row sx={{ justifyContent: 'center' }}>
             <FormControlLabel
               control={<Checkbox {...register('bci')} />}
               label="Banco BCI"
@@ -84,11 +103,24 @@ export const RegisterForm = () => {
               label="Banco de Chile"
             />
           </FormGroup>
-          <Button type="submit" variant="contained">
+
+          <Button type="submit" variant="contained" fullWidth>
             Registrarse
           </Button>
         </Stack>
       </form>
+
+      {/* Mensaje de confirmación */}
+      <Typography
+        variant="body2"
+        textAlign="center"
+        sx={{ mt: 2, fontSize: { xs: '0.85rem', sm: '1rem' } }}
+      >
+        ¿Ya tienes cuenta?{' '}
+        <Link href={ROUTES.LOGIN} style={{ color: '#1976d2', fontWeight: 500 }}>
+          Inicia sesión
+        </Link>
+      </Typography>
     </Stack>
   );
 };

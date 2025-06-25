@@ -1,31 +1,56 @@
+'use client';
+
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Image from 'next/image';
 import { PropsWithChildren } from 'react';
 
-export const HeaderLayout = ({ children }: PropsWithChildren) => (
-  <header>
-    <AppBar position="fixed" color="primary">
-      <Toolbar sx={{ width: '90%', mx: 'auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Image
-            src="/images/FinSightLogo.png"
-            alt="FinSight Logo"
-            width={65}
-            height={65}
-          />
-        </Box>
+export const HeaderLayout = ({ children }: PropsWithChildren) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-        <Box sx={{ flexGrow: 1 }} />
+  return (
+    <header>
+      <AppBar position="fixed" color="primary">
+        <Toolbar
+          sx={{
+            width: '100%',
+            px: { xs: 2, sm: 3, md: '5%' },
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          {/* Logo a la izquierda */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Image
+              src="/images/FinSightLogo.png"
+              alt="FinSight Logo"
+              width={isMobile ? 45 : 65}
+              height={isMobile ? 45 : 65}
+            />
+          </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {children}
-        </Box>
-      </Toolbar>
-    </AppBar>
+          {/* Botones o icono hamburguesa alineado a la derecha */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              flexDirection: 'row',
+            }}
+          >
+            {children}
+          </Box>
+        </Toolbar>
+      </AppBar>
 
-    {/* Empty toolbar to not have content behind the AppBar with "fixed" position  */}
-    <Toolbar />
-  </header>
-);
+      {/* Espacio extra para compensar AppBar fijo */}
+      <Toolbar />
+    </header>
+  );
+};

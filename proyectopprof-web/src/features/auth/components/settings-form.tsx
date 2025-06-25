@@ -1,67 +1,71 @@
 'use client';
 
-import { getUserApi, updateUserApi } from '@/features/auth/api';
-import {
-  RegisterAuth,
-  registerAuthSchema,
-} from '@/lib/zod/schemas/auth.schema';
+import { ROUTES } from '@/constants/routes';
+import { API_URLS } from '@/lib/fetch/constants';
+import { patchRequestWithAuth } from '@/lib/fetch/utils';
+import { UpdateUser, updateUserSchema } from '@/lib/zod/schemas/users.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useRouter } from 'next/navigation';
 import { enqueueSnackbar } from 'notistack';
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 export const SettingsForm = () => {
-  // const [bciCheck, setBciCheck] = useState(false);
-  // const [chileCheck, setCheck] = useState(false);
-  // const [bciCheck, setBciCheck] = useState(false);
+  const router = useRouter();
 
-  // "react-hook-form"
-  const { register, handleSubmit, reset } = useForm<RegisterAuth>({
-    resolver: zodResolver(registerAuthSchema),
-    defaultValues: {
-      bci: false,
-      chile: false,
-    },
+  const { register, handleSubmit } = useForm<UpdateUser>({
+    resolver: zodResolver(updateUserSchema),
   });
 
-  useEffect(() => {
-    (async () => {
-      const { bankIds } = await getUserApi();
-
-      reset({
-        bci: bankIds.includes('bci'),
-        chile: bankIds.includes('chile'),
-      });
-    })();
-  }, [reset]);
-
-  // Utils
-  const onSubmit = async ({ bci, chile }: RegisterAuth) => {
+  const onSubmit = async ({ bci, chile }: UpdateUser) => {
     const bankIds = [];
     if (bci) bankIds.push('bci');
     if (chile) bankIds.push('chile');
 
     try {
-      const { message } = await updateUserApi({ bankIds });
+      const { message } = await patchRequestWithAuth(API_URLS.USERS, {
+        bankIds,
+      });
       enqueueSnackbar(message, { variant: 'success' });
+
+      router.push(ROUTES.FEEDS);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Something went wrong';
+        err instanceof Error ? err.message : 'Error al actualizar datos';
       enqueueSnackbar(message, { variant: 'error' });
     }
   };
 
   return (
-    <Stack spacing={2}>
-      <Typography variant="h5" textAlign="center">
+    <Stack
+      component={Paper}
+      spacing={2}
+      sx={{
+        width: {
+          xs: '90%',
+          sm: '400px',
+        },
+        maxWidth: '100%',
+        px: { xs: 3, sm: 6 },
+        py: { xs: 4, sm: 6 },
+        mx: 'auto',
+        mt: { xs: 6, sm: 8 },
+      }}
+    >
+      <Typography
+        variant="h5"
+        textAlign="center"
+        sx={{ fontSize: { xs: '1.5rem', sm: '1.8rem' } }}
+      >
         Configuración Usuario
       </Typography>
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
           <FormGroup>
@@ -74,7 +78,8 @@ export const SettingsForm = () => {
               label="Banco de Chile"
             />
           </FormGroup>
-          <Button type="submit" variant="contained">
+
+          <Button type="submit" variant="contained" fullWidth>
             Actualizar
           </Button>
         </Stack>

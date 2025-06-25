@@ -23,11 +23,25 @@ export default function HomePage() {
           alignItems: 'center',
           justifyContent: 'center',
           gap: 3,
-          padding: 2,
+          padding: {
+            xs: 2, //Móviles
+            sm: 4, //Tablets
+            md: 6, //Escritorio
+          },
         }}
         component="main"
       >
-        <Typography variant="h3" textAlign="center">
+        <Typography
+          variant="h3"
+          textAlign="center"
+          sx={{
+            fontSize: {
+              xs: '2rem', //Móviles
+              sm: '2.5rem', //Tablets
+              md: '3rem', //Escritorio
+            },
+          }}
+        >
           Bienvenido a FinSight
         </Typography>
 

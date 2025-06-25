@@ -7,7 +7,8 @@ class ScraperService {
   public scrapeBci = async () => {
     // Load page
     const browser = await this.getBrowser(); // Launch browser
-    const page = await browser.newPage(bciBank.url); // Go to page
+    const pageUrl = `${bciBank.baseUrl}${bciBank.benefitsSegment}` as const;
+    const page = await browser.newPage(pageUrl); // Go to page
 
     // Wait for page to load
     const bciSelector =
@@ -27,19 +28,22 @@ class ScraperService {
     const benefits = [];
     const numPages = 30;
     for (let i = 0; i < numPages; i++) {
-      const newBenefits = await page.evaluate((selector, bankId) => {
+      const newBenefits = await page.evaluate((selector, bankId, baseUrl) => {
         const benefitsContainer = document.querySelector(selector);
         const benefitsLinks = benefitsContainer?.querySelectorAll("a");
         if (!benefitsContainer || !benefitsLinks) return [];
 
         return Array.from(benefitsLinks).map((item) => {
-          const paragraphs = Array.from(item.querySelectorAll("div div div p"));
+          const paragraphs = Array.from(
+            item.querySelectorAll("div div div p"),
+          );
           const paragraphTexts = paragraphs.map(({ textContent }) =>
             textContent
           );
+          const urlSegment = item.getAttribute("href");
           return {
             bankId,
-            url: item.getAttribute("href") || "",
+            url: urlSegment ? `${baseUrl}${urlSegment}` : "",
             title: paragraphTexts[0] || "",
             image:
               item.querySelector("article figure img")?.getAttribute("src") ||
@@ -47,7 +51,7 @@ class ScraperService {
             description: paragraphTexts[2] || paragraphTexts[1] || "",
           };
         });
-      }, { args: [bciSelector, bciBank.id] });
+      }, { args: [bciSelector, bciBank.id, bciBank.baseUrl] });
 
       // Add benefits from current page to results
       benefits.push(...newBenefits);
@@ -69,7 +73,8 @@ class ScraperService {
             ".w-100.px-3.px-lg-0.pl-lg-4.d-flex.flex-wrap.align-items-stretch",
           );
           if (!benefitsContainer) return false;
-          return Array.from(benefitsContainer.querySelectorAll("a")).length > 0;
+          return Array.from(benefitsContainer.querySelectorAll("a")).length >
+            0;
         },
       );
     }
@@ -84,7 +89,8 @@ class ScraperService {
   public scrapeChile = async () => {
     // Load page
     const browser = await this.getBrowser(); // Launch browser
-    const page = await browser.newPage(chileBank.url); // Go to page
+    const pageUrl = `${chileBank.baseUrl}${chileBank.benefitsSegment}` as const;
+    const page = await browser.newPage(pageUrl); // Go to page
     const chileSelector = "#beneficios";
     // Wait for page to load
     await page.waitForSelector(chileSelector);

@@ -37,7 +37,7 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "cristbalale-proyectoppr-64"
+          project: "finsightdemo"
           entrypoint: "./server.cjs"
           root: ".next/standalone"
           
